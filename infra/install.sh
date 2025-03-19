@@ -2,7 +2,7 @@
 
 # List of Terraform modules to apply in sequence
 targets=(
-  "module.vpc"
+  # "module.vpc"
   "module.eks"
 )
 
