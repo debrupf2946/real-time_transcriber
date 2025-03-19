@@ -68,9 +68,12 @@ locals {
   name   = var.name
   region = var.region
 
-  vpc_cidr           = "10.12.0.0/16"
+  vpc_cidr           = "10.10.0.0/16"
   secondary_vpc_cidr = "100.64.0.0/16"
   azs                = slice(data.aws_availability_zones.available.names, 0, 3)
+  vpc_id = "vpc-00dae4de42d9c984a"
+  private_subnet_ids = ["subnet-014f97f0e19a2036d", "subnet-06cb3cc818ffb0036", "subnet-0caf84911b331f38c","subnet-01f10c9c0ff74d0f2"]
+  public_subnet_ids = ["subnet-0ce19ae78dcc3ec5e","subnet-0c271916613e8d85f"]
 
   cluster_version = var.eks_cluster_version
   additional_iam_policies = [
@@ -97,10 +100,10 @@ module "eks" {
   #WARNING: Avoid using this option (cluster_endpoint_public_access = true) in preprod or prod accounts. This feature is designed for sandbox accounts, simplifying cluster deployment and testing.
   cluster_endpoint_public_access = true
 
-  vpc_id = module.vpc.vpc_id
+  vpc_id = local.vpc_id
   # We only want to assign the 10.0.* range subnets to the data plane
-  subnet_ids               = slice(module.vpc.private_subnets, 0, 3)
-  control_plane_subnet_ids = module.vpc.private_subnets
+  subnet_ids               = local.private_subnet_ids
+  control_plane_subnet_ids = local.private_subnet_ids
 
   enable_cluster_creator_admin_permissions = true
 
