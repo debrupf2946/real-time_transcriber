@@ -20,12 +20,14 @@ set-jarvis-kubectl-context:
 build-ray-service:
 	docker build --platform linux/amd64 --no-cache -t whisper-ray-service:$(RELEASE_VERSION) .
 
-push-docker-backend-service:
-	ecr-login
-	docker tag whisper-ray-service:$(RELEASE_VERSION) $(WHISPER_RAY_SERVICE_REPO_URL):$(RELEASE_VERSION)
+push-docker-whisper-ray-service:
+	docker tag whisper-ray-service:$(VERSION) $(WHISPER_RAY_SERVICE_REPO_URL):$(RELEASE_VERSION)
 	docker push $(WHISPER_RAY_SERVICE_REPO_URL):$(RELEASE_VERSION)
 
-build-push-ray-service: build-ray-service push-docker-backend-service
+build-push-ray-service: build-ray-service push-docker-whisper-ray-service
 
 deploy-ray-service:
 	kubectl apply -f $(GIT_ROOT)/Whisper-RayService.yaml
+
+undeploy-ray-service:
+	kubectl delete -f $(GIT_ROOT)/Whisper-RayService.yaml
