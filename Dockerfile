@@ -1,7 +1,7 @@
 # File name: Dockerfile
 FROM rayproject/ray-ml:2.9.2-py310
 WORKDIR /serve_app
-COPY . . 
+COPY requirements.txt .
 RUN pip install -r requirements.txt
 
 USER root
