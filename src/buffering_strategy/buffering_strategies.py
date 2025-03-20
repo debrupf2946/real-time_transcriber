@@ -297,9 +297,9 @@ import asyncio
 import json
 import time
 from fastapi import WebSocket
-from audio_utils import save_audio_to_file
+from src.audio_utils import save_audio_to_file
 
-from .buffering_strategy_interface import BufferingStrategyInterface
+from src.buffering_strategy.buffering_strategy_interface import BufferingStrategyInterface
 from ray.serve.handle import DeploymentHandle
 
 import logging

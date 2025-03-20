@@ -1,6 +1,6 @@
 from transformers import pipeline
-from .asr_interface import ASRInterface
-from audio_utils import save_audio_to_file
+from src.asr.asr_interface import ASRInterface
+from src.audio_utils import save_audio_to_file
 import os
 
 class WhisperASR(ASRInterface):

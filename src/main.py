@@ -2,9 +2,9 @@ import argparse
 import asyncio
 import json
 
-from .server import Server
-from asr.asr_factory import ASRFactory
-from vad.vad_factory import VADFactory
+from src.server import Server
+from src.asr.asr_factory import ASRFactory
+from src.vad.vad_factory import VADFactory
 
 def parse_args():
     parser = argparse.ArgumentParser(description="VoiceStreamAI Server: Real-time audio transcription using self-hosted Whisper and WebSocket")

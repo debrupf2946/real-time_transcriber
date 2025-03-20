@@ -1,8 +1,8 @@
 import os
 from faster_whisper import WhisperModel, BatchedInferencePipeline
 
-from .asr_interface import ASRInterface
-from audio_utils import save_audio_to_file
+from src.asr.asr_interface import ASRInterface
+from src.audio_utils import save_audio_to_file
 
 
 from ray import serve
