@@ -43,7 +43,6 @@ class PyannoteVAD(VADInterface):
 
     async def detect_activity(self, client):
         audio_file_path = await save_audio_to_file(client.scratch_buffer, client.get_file_name())
-        print("audio file saved")
         vad_results = self.vad_pipeline(audio_file_path)
         
         # Check if file exists before deleting
