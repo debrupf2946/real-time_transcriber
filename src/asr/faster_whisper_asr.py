@@ -7,109 +7,6 @@ from ..audio_utils import save_audio_to_file
 import uuid
 from ray import serve
 
-language_codes = {
-    "afrikaans": "af",
-    "amharic": "am",
-    "arabic": "ar",
-    "assamese": "as",
-    "azerbaijani": "az",
-    "bashkir": "ba",
-    "belarusian": "be",
-    "bulgarian": "bg",
-    "bengali": "bn",
-    "tibetan": "bo",
-    "breton": "br",
-    "bosnian": "bs",
-    "catalan": "ca",
-    "czech": "cs",
-    "welsh": "cy",
-    "danish": "da",
-    "german": "de",
-    "greek": "el",
-    "english": "en",
-    "spanish": "es",
-    "estonian": "et",
-    "basque": "eu",
-    "persian": "fa",
-    "finnish": "fi",
-    "faroese": "fo",
-    "french": "fr",
-    "galician": "gl",
-    "gujarati": "gu",
-    "hausa": "ha",
-    "hawaiian": "haw",
-    "hebrew": "he",
-    "hindi": "hi",
-    "croatian": "hr",
-    "haitian": "ht",
-    "hungarian": "hu",
-    "armenian": "hy",
-    "indonesian": "id",
-    "icelandic": "is",
-    "italian": "it",
-    "japanese": "ja",
-    "javanese": "jw",
-    "georgian": "ka",
-    "kazakh": "kk",
-    "khmer": "km",
-    "kannada": "kn",
-    "korean": "ko",
-    "latin": "la",
-    "luxembourgish": "lb",
-    "lingala": "ln",
-    "lao": "lo",
-    "lithuanian": "lt",
-    "latvian": "lv",
-    "malagasy": "mg",
-    "maori": "mi",
-    "macedonian": "mk",
-    "malayalam": "ml",
-    "mongolian": "mn",
-    "marathi": "mr",
-    "malay": "ms",
-    "maltese": "mt",
-    "burmese": "my",
-    "nepali": "ne",
-    "dutch": "nl",
-    "norwegian nynorsk": "nn",
-    "norwegian": "no",
-    "occitan": "oc",
-    "punjabi": "pa",
-    "polish": "pl",
-    "pashto": "ps",
-    "portuguese": "pt",
-    "romanian": "ro",
-    "russian": "ru",
-    "sanskrit": "sa",
-    "sindhi": "sd",
-    "sinhalese": "si",
-    "slovak": "sk",
-    "slovenian": "sl",
-    "shona": "sn",
-    "somali": "so",
-    "albanian": "sq",
-    "serbian": "sr",
-    "sundanese": "su",
-    "swedish": "sv",
-    "swahili": "sw",
-    "tamil": "ta",
-    "telugu": "te",
-    "tajik": "tg",
-    "thai": "th",
-    "turkmen": "tk",
-    "tagalog": "tl",
-    "turkish": "tr",
-    "tatar": "tt",
-    "ukrainian": "uk",
-    "urdu": "ur",
-    "uzbek": "uz",
-    "vietnamese": "vi",
-    "yiddish": "yi",
-    "yoruba": "yo",
-    "chinese": "zh",
-    "cantonese": "yue",
-}
-
 @serve.deployment(
     ray_actor_options={"num_gpus": 1},
     autoscaling_config={"min_replicas": 1, "max_replicas": 2},
@@ -153,14 +50,10 @@ class FasterWhisperASR(ASRInterface):
 
         
 
-    async def transcribe(self, client):
-
-        client_config_language = client.config.get("language")
-        language = "en" if client_config_language is None else language_codes.get(
-            client_config_language.lower())
-        
+    async def transcribe(self, language, scratch_buffer):
+       
         file_name = str(uuid.uuid4()) + ".wav"
-        file_path = await save_audio_to_file(bytearray(client.scratch_buffer), file_name) 
+        file_path = await save_audio_to_file(scratch_buffer, file_name) 
         try:
             segments, info = self.asr_pipeline.transcribe(
                 file_path, word_timestamps=True, language=language, beam_size=2)
