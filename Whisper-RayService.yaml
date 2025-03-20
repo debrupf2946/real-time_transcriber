@@ -23,7 +23,7 @@ spec:
                     secretKeyRef:
                       name: hf-token
                       key: token
-              image: 975226449092.dkr.ecr.us-east-1.amazonaws.com/whisper-ray-service:alpha
+              image: 975226449092.dkr.ecr.us-east-1.amazonaws.com/whisper-ray-service:latest
               imagePullPolicy: Always
               name: ray-head
               ports:
@@ -72,7 +72,7 @@ spec:
                       secretKeyRef:
                         name: hf-token
                         key: token
-                image: 975226449092.dkr.ecr.us-east-1.amazonaws.com/whisper-ray-service:alpha
+                image: 975226449092.dkr.ecr.us-east-1.amazonaws.com/whisper-ray-service:latest
                 imagePullPolicy: Always
                 name: ray-worker
                 resources:
