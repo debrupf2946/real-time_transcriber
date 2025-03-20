@@ -24,6 +24,7 @@ spec:
                       name: hf-token
                       key: token
               image: 975226449092.dkr.ecr.us-east-1.amazonaws.com/whisper-ray-service:alpha
+              imagePullPolicy: Always
               name: ray-head
               ports:
                 - containerPort: 6379
@@ -72,6 +73,7 @@ spec:
                         name: hf-token
                         key: token
                 image: 975226449092.dkr.ecr.us-east-1.amazonaws.com/whisper-ray-service:alpha
+                imagePullPolicy: Always
                 name: ray-worker
                 resources:
                   limits:
