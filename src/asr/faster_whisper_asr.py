@@ -4,7 +4,7 @@ from faster_whisper import WhisperModel, BatchedInferencePipeline
 from .asr_interface import ASRInterface
 from ..audio_utils import save_audio_to_file
 
-
+import uuid
 from ray import serve
 
 language_codes = {
@@ -154,21 +154,24 @@ class FasterWhisperASR(ASRInterface):
         
 
     async def transcribe(self, client):
-        file_path = await save_audio_to_file(client.scratch_buffer, client.get_file_name())
 
-        language = None if client.config['language'] is None else language_codes.get(
-            client.config['language'].lower())
-        segments, info = self.asr_pipeline.transcribe(
-            file_path, word_timestamps=True, language="en",beam_size=2)
-
-        segments = list(segments)  # The transcription will actually run here.
+        client_config_language = client.config.get("language")
+        language = "en" if client_config_language is None else language_codes.get(
+            client_config_language.lower())
         
-        if os.path.exists(file_path):
-            os.remove(file_path)
-
+        file_name = str(uuid.uuid4()) + ".wav"
+        file_path = await save_audio_to_file(client.scratch_buffer, file_name) 
+        try:
+            segments, info = self.asr_pipeline.transcribe(
+                file_path, word_timestamps=True, language=language, beam_size=2)
+            segments = list(segments)  # The transcription will actually run here.
+        except Exception as e:
+            print(f"Error transcribing audio: {e}")
+        finally:
+            if os.path.exists(file_path):
+                os.remove(file_path)
         flattened_words = [
             word for segment in segments for word in segment.words]
-
         to_return = {
             "language": info.language,
             "language_probability": info.language_probability,
