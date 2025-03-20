@@ -1,7 +1,7 @@
 GIT_ROOT := $(shell git rev-parse --show-toplevel)
 INFRA_ROOT := $(GIT_ROOT)/infra
 VERSION ?= local
-RELEASE_VERSION ?= v1
+RELEASE_VERSION ?= v2
 TF_INFRA_ROOT := $(INFRA_ROOT)
 ECR_REPO_BASE_URL = 975226449092.dkr.ecr.us-east-1.amazonaws.com
 WHISPER_RAY_SERVICE_REPO_URL = $(ECR_REPO_BASE_URL)/whisper-ray-service
@@ -9,12 +9,16 @@ EKS_CLUSTER_NAME := kuberay-cluster
 REGION = us-east-1
 TARGET_ZIP=whisper-ray-service.zip
 SOURCE_FILES=.
+VOICE_KUBERAY_CLUSTER_NAME := voice-kuberay-cluster
 
 ecr-login:
 	aws ecr get-login-password --region $(REGION) | docker login --username AWS --password-stdin $(ECR_REPO_BASE_URL)
 
 set-jarvis-kubectl-context:
 	aws eks update-kubeconfig --region $(REGION) --name $(EKS_CLUSTER_NAME)
+
+set-voice-kuberay-context:
+	aws eks update-kubeconfig --region $(REGION) --name $(VOICE_KUBERAY_CLUSTER_NAME)
 
 build-ray-service:
 	docker build --platform linux/amd64 --no-cache -t whisper-ray-service:$(VERSION) .
@@ -42,7 +46,7 @@ undeploy-ray-service:
 # Rule to create a ZIP file
 create_zip:
 	@echo "Creating ZIP file: $(TARGET_ZIP)"
-	@zip -r "$(TARGET_ZIP)" . -x "infra/*" ".git/*" 
+	@zip -r "$(TARGET_ZIP)" . -x "infra_*/*" ".git/*"
  
 # Rule to rename the ZIP file using SHA256 hash
 rename_zip: create_zip

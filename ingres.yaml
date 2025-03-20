@@ -1,27 +1,38 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
+  annotations:
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-1:975226449092:certificate/07f2dd38-dc71-4831-936d-64bf9abefb8d
+    alb.ingress.kubernetes.io/group.name: whisper
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}, {"HTTP":80}]'
+    alb.ingress.kubernetes.io/load-balancer-name: voice-whisper-alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/ssl-redirect: "443"
+    alb.ingress.kubernetes.io/target-type: ip
+    external-dns.alpha.kubernetes.io/hostname: whisper.voice.staging.owl.works
   name: whisper-streaming
   namespace: default
-  annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: "/$1"
 spec:
-  ingressClassName: nginx
+  ingressClassName: alb
   rules:
-    - host: k8s-ingressn-nginxing-b14a263afc-c46cf3c3aab121af.elb.us-east-1.amazonaws.com # Use your LoadBalancer IP or domain
-      http:
-        paths:
-          - path: /dashboard/(.*)
-            pathType: ImplementationSpecific
-            backend:
-              service:
-                name: whisper-streaming-raycluster-4f72n-head-svc
-                port:
-                  number: 8265
-          - path: /serve/(.*)
-            pathType: ImplementationSpecific
-            backend:
-              service:
-                name: whisper-streaming-raycluster-4f72n-head-svc
-                port:
-                  number: 8000
+  - host: whisper.voice.staging.owl.works
+    http:
+      paths:
+      - backend:
+          service:
+            name: whisper-streaming-raycluster-whjdc-head-svc
+            port:
+              number: 8000
+        path: /serve
+        pathType: Prefix
+      - backend:
+          service:
+            name: whisper-streaming-raycluster-whjdc-head-svc
+            port:
+              number: 8265
+        path: /
+        pathType: Prefix
+  tls:
+  - hosts:
+    - whisper.voice.staging.owl.works
+    secretName: whisper-streaming-tls

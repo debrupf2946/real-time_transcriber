@@ -34,8 +34,8 @@ class TranscriptionServer:
         self.samples_width = samples_width
         self.connected_clients = {}
 
-        from asr.asr_factory import ASRFactory
-        from vad.vad_factory import VADFactory
+        from .asr.asr_factory import ASRFactory
+        from .vad.vad_factory import VADFactory
 
         self.vad_pipeline = VADFactory.create_vad_pipeline("pyannote")
         self.asr_pipeline = ASRFactory.create_asr_pipeline("faster_whisper")
