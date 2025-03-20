@@ -160,7 +160,7 @@ class FasterWhisperASR(ASRInterface):
             client_config_language.lower())
         
         file_name = str(uuid.uuid4()) + ".wav"
-        file_path = await save_audio_to_file(client.scratch_buffer, file_name) 
+        file_path = await save_audio_to_file(bytearray(client.scratch_buffer), file_name) 
         try:
             segments, info = self.asr_pipeline.transcribe(
                 file_path, word_timestamps=True, language=language, beam_size=2)
