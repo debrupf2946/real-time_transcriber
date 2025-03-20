@@ -6,8 +6,8 @@ import json
 import asyncio
 import logging
 
-from audio_utils import save_audio_to_file
-from client import Client
+from src.audio_utils import save_audio_to_file
+from src.client import Client
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
