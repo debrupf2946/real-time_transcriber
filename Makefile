@@ -8,6 +8,9 @@ WHISPER_RAY_SERVICE_REPO_URL = $(ECR_REPO_BASE_URL)/whisper-ray-service
 EKS_CLUSTER_NAME := kuberay-cluster
 REGION = us-east-1
 
+run-client:
+	streamlit run app.py
+
 ecr-login:
 	aws ecr get-login-password --region $(REGION) | docker login --username AWS --password-stdin $(ECR_REPO_BASE_URL)
 
