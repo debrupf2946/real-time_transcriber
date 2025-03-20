@@ -23,7 +23,7 @@ spec:
                     secretKeyRef:
                       name: hf-token
                       key: token
-              image: public.ecr.aws/darrenlin/ray-whisper-streaming:latest
+              image: 975226449092.dkr.ecr.us-east-1.amazonaws.com/whisper-ray-service:alpha
               name: ray-head
               ports:
                 - containerPort: 6379
@@ -71,7 +71,7 @@ spec:
                       secretKeyRef:
                         name: hf-token
                         key: token
-                image: public.ecr.aws/darrenlin/ray-whisper-streaming:latest
+                image: 975226449092.dkr.ecr.us-east-1.amazonaws.com/whisper-ray-service:alpha
                 name: ray-worker
                 resources:
                   limits:
@@ -91,8 +91,6 @@ spec:
     applications:
       - name: whisper_app
         import_path: src.voice_stream_ai_server:entrypoint
-        runtime_env:
-          working_dir: "serve_app/src"
         deployments:
         - name: TranscriptionServer
           max_concurrent_queries: 100

@@ -1,0 +1,38 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: whisper-streaming
+  namespace: default
+  annotations:
+    alb.ingress.kubernetes.io/load-balancer-name: whisper-alb
+    alb.ingress.kubernetes.io/group.name: "whisper"
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}, {"HTTP":80}]'
+    alb.ingress.kubernetes.io/certificate-arn: "arn:aws:acm:us-east-1:975226449092:certificate/07f2dd38-dc71-4831-936d-64bf9abefb8d"
+    alb.ingress.kubernetes.io/ssl-redirect: "443"
+    external-dns.alpha.kubernetes.io/hostname: whisper.voice.staging.owl.works
+spec:
+  ingressClassName: alb
+  tls:
+    - hosts:
+        - whisper.voice.staging.owl.works
+      secretName: whisper-streaming-tls # This secret is a placeholder for the Ingress spec
+  rules:
+    - host: whisper.voice.staging.owl.works
+      http:
+        paths:
+          - path: /dashboard(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: whisper-streaming-raycluster-4f72n-head-svc
+                port:
+                  number: 8265
+          - path: /serve(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: whisper-streaming-raycluster-4f72n-head-svc
+                port:
+                  number: 8000
