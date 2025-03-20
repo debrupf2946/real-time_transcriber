@@ -4,9 +4,5 @@ __pycache__
 *.pyd
 *.pyw
 *.pyz
-<<<<<<< HEAD
-*.terraform
-=======
 .terraform*
 venv/
->>>>>>> 464fb62cfab5620cbc8317a40499440a24f3a356
