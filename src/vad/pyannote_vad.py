@@ -1,15 +1,12 @@
-from os import remove
 import os
 
-from pyannote.core import Segment
 from pyannote.audio import Model
 from pyannote.audio.pipelines import VoiceActivityDetection
 
-from src.vad.vad_interface import VADInterface
-from src.audio_utils import save_audio_to_file
+from .vad_interface import VADInterface
+from ..audio_utils import save_audio_to_file
 
 from ray import serve
-from ray.serve.handle import DeploymentHandle
 
 @serve.deployment(
     ray_actor_options={"num_cpus": 1},

@@ -1,18 +1,13 @@
 from ray.serve.handle import DeploymentHandle
-import ray
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from ray import serve
 
-import websockets
 import uuid
-import json
-import asyncio
 import logging
 
-from src.audio_utils import save_audio_to_file
-from src.client import Client
-from src.asr.faster_whisper_asr import FasterWhisperASR
-from src.vad.pyannote_vad import PyannoteVAD
+from .client import Client
+from .asr.faster_whisper_asr import FasterWhisperASR
+from .vad.pyannote_vad import PyannoteVAD
 
 logger = logging.getLogger("ray.serve")
 logger.setLevel(logging.DEBUG)
@@ -28,7 +23,6 @@ class TranscriptionServer:
 
     def __init__(self, asr_handle: DeploymentHandle, vad_handle=DeploymentHandle, sampling_rate=16000, samples_width=2):
         logger.info("Initializing TranscriptionServer")
-        print("[DEBUG] Initializing TranscriptionServer")
 
         self.sampling_rate = sampling_rate
         self.samples_width = samples_width

@@ -1,13 +1,9 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 
-import websockets
 import uuid
-import json
-import asyncio
 import logging
 
-from src.audio_utils import save_audio_to_file
-from src.client import Client
+from .client import Client
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)

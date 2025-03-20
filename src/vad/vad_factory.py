@@ -1,4 +1,4 @@
-from src.vad.pyannote_vad import PyannoteVAD
+from .pyannote_vad import PyannoteVAD
 
 class VADFactory:
     """

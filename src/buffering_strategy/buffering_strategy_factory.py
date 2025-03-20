@@ -1,4 +1,4 @@
-from src.buffering_strategy.buffering_strategies import SilenceAtEndOfChunk
+from .buffering_strategies import SilenceAtEndOfChunk
 
 class BufferingStrategyFactory:
     """
