@@ -9,10 +9,10 @@ import json
 import asyncio
 import logging
 
-from .audio_utils import save_audio_to_file
-from .client import Client
-from .asr.faster_whisper_asr import FasterWhisperASR
-from .vad.pyannote_vad import PyannoteVAD
+from src.audio_utils import save_audio_to_file
+from src.client import Client
+from src.asr.faster_whisper_asr import FasterWhisperASR
+from src.vad.pyannote_vad import PyannoteVAD
 
 logger = logging.getLogger("ray.serve")
 logger.setLevel(logging.DEBUG)
