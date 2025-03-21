@@ -52,8 +52,8 @@ async def record_and_stream():
 
     async with websockets.connect(SERVER_URL) as websocket:
         print("[INFO] Connected to server, streaming audio...")
-        print(
-            f"[INFO] Sending chunks of {CHUNK_DURATION_MS}ms ({SAMPLES_PER_CHUNK} samples)")
+        # print(
+        #     f"[INFO] Sending chunks of {CHUNK_DURATION_MS}ms ({SAMPLES_PER_CHUNK} samples)")
 
         chunk_counter = 0
         debug_buffer = bytearray()  # Buffer to accumulate 50 chunks for debugging
@@ -73,8 +73,13 @@ async def record_and_stream():
                 #     debug_buffer = bytearray()  # Reset buffer after saving
 
                 # Send the 100ms chunk to the server
+                # print("audio_data", audio_data)
+                # print("len(audio_data)", len(audio_data))
+                # print("type(audio_data)", type(audio_data))
                 await websocket.send(audio_data)
-                # print(f"[DEBUG] Sent chunk {chunk_counter} ({len(audio_data)} bytes)")
+
+                # print(
+                #     f"[DEBUG] Sent chunk {chunk_counter} ({len(audio_data)} bytes)")
 
                 # Check for any server response
                 try:
