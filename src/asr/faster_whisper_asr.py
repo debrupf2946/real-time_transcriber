@@ -7,6 +7,10 @@ from ..audio_utils import save_audio_to_file
 import uuid
 from ray import serve
 
+import logging
+log = logging.getLogger("ray.serve")
+log.setLevel(logging.DEBUG)
+
 @serve.deployment(
     ray_actor_options={"num_gpus": 1},
     autoscaling_config={"min_replicas": 1, "max_replicas": 2},
@@ -51,7 +55,8 @@ class FasterWhisperASR(ASRInterface):
         
 
     async def transcribe(self, language, scratch_buffer):
-       
+
+        log.info("Transcribing audio")
         file_name = str(uuid.uuid4()) + ".wav"
         file_path = await save_audio_to_file(scratch_buffer, file_name) 
         try:
@@ -59,7 +64,8 @@ class FasterWhisperASR(ASRInterface):
                 file_path, word_timestamps=True, language=language, beam_size=2)
             segments = list(segments)  # The transcription will actually run here.
         except Exception as e:
-            print(f"Error transcribing audio: {e}")
+
+            log.error("error transcribing audio", e)
         finally:
             if os.path.exists(file_path):
                 os.remove(file_path)
@@ -74,4 +80,5 @@ class FasterWhisperASR(ASRInterface):
                 {"word": w.word, "start": w.start, "end": w.end, "probability": w.probability} for w in flattened_words
             ]
         }
+        log.error("returning flattened_words", to_return)
         return to_return

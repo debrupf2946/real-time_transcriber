@@ -1,7 +1,7 @@
 GIT_ROOT := $(shell git rev-parse --show-toplevel)
 INFRA_ROOT := $(GIT_ROOT)/infra
 VERSION ?= local
-RELEASE_VERSION ?= v2
+RELEASE_VERSION ?= v3
 TF_INFRA_ROOT := $(INFRA_ROOT)
 ECR_REPO_BASE_URL = 975226449092.dkr.ecr.us-east-1.amazonaws.com
 WHISPER_RAY_SERVICE_REPO_URL = $(ECR_REPO_BASE_URL)/whisper-ray-service
@@ -35,26 +35,16 @@ deploy-ray-service:
 undeploy-ray-service:
 	kubectl delete -f $(GIT_ROOT)/Whisper-RayService.yaml
 
-# create-zip:
-# 	zip -r whisper-ray-service.zip . -x "infra/*" ".git/*" 
-# 	old_file="whisper-ray-service.zip"
-# 	new_file="$(md5sum "$old_file" | awk '{print $1}').zip"
-# 	mv "$old_file" "$new_file"
-# 	echo "Created zip file: $new_file"
 
-
-# Rule to create a ZIP file
 create_zip:
 	@echo "Creating ZIP file: $(TARGET_ZIP)"
 	@zip -r "$(TARGET_ZIP)" . -x "infra_*/*" ".git/*"
  
-# Rule to rename the ZIP file using SHA256 hash
-rename_zip: create_zip
+rename_zip:
 	@hash=$$(sha256sum "$(TARGET_ZIP)" | awk '{print $$1}'); \
 	mv "$(TARGET_ZIP)" "$$hash.zip"; \
 	echo "Renamed $(TARGET_ZIP) to $$hash.zip"
 
 
-# upload-to-s3:
+create_and_rename_zip: create_zip rename_zip
 
-# 	aws s3 cp my_archive.zip s3://your-bucket-name/ --acl public-read

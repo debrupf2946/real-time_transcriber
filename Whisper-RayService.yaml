@@ -23,7 +23,7 @@ spec:
                     secretKeyRef:
                       name: hf-token
                       key: token
-              image: 975226449092.dkr.ecr.us-east-1.amazonaws.com/whisper-ray-service:v1
+              image: 975226449092.dkr.ecr.us-east-1.amazonaws.com/whisper-ray-service:v3
               imagePullPolicy: Always
               name: ray-head
               ports:
@@ -42,7 +42,7 @@ spec:
               resources:
                 limits:
                   cpu: "2"
-                  memory: 8G
+                  memory: 16G
                 requests:
                   cpu: "2"
                   memory: 8G
@@ -72,7 +72,7 @@ spec:
                       secretKeyRef:
                         name: hf-token
                         key: token
-                image: 975226449092.dkr.ecr.us-east-1.amazonaws.com/whisper-ray-service:v1
+                image: 975226449092.dkr.ecr.us-east-1.amazonaws.com/whisper-ray-service:v3
                 imagePullPolicy: Always
                 name: ray-worker
                 resources:
@@ -91,32 +91,34 @@ spec:
                 value: worker
   serveConfigV2: |
     applications:
-      - name: voice_transcriber
+      - name: default
         import_path: src.voice_stream_ai_server:entrypoint
         runtime_env:
-          working_dir: "https://jarvis-whisper.s3.us-east-1.amazonaws.com/742b0fbf2e01bd0616628c0d0a765a364edabe1956f1432be28f481d57cba500.zip"
+          working_dir: "https://jarvis-whisper.s3.us-east-1.amazonaws.com/c36189e1bf5ec3c170f1f50307aa95e0fd9d8dd63acf6d6c236191c0e022e681.zip"
         deployments:
         - name: TranscriptionServer
           max_concurrent_queries: 100
           autoscaling_config:
             target_num_ongoing_requests_per_replica: 5
             min_replicas: 1
-            max_replicas: 5
-            initial_replicas: 3
+            max_replicas: 1
+            initial_replicas: 1
         - name: FasterWhisperASR
           max_concurrent_queries: 10
+          ray_actor_options:
+            resources: {"memory": 32_000_000_000}
           autoscaling_config:
             target_num_ongoing_requests_per_replica: 2
             min_replicas: 1
-            max_replicas: 20
-            initial_replicas: 3
+            max_replicas: 1
+            initial_replicas: 1
         - name: PyannoteVAD
           max_concurrent_queries: 10
           autoscaling_config:
             target_num_ongoing_requests_per_replica: 3
             min_replicas: 1
-            max_replicas: 20
-            initial_replicas: 3
+            max_replicas: 1
+            initial_replicas: 1
   serviceUnhealthySecondThreshold: 900
 # ---
 # apiVersion: networking.k8s.io/v1
