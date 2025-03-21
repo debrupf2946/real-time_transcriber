@@ -30,8 +30,8 @@ class TranscriptionServer:
         self.asr_handle = asr_handle
         self.vad_handle = vad_handle
 
-        from asr.asr_factory import ASRFactory
-        from vad.vad_factory import VADFactory
+        from .asr.asr_factory import ASRFactory
+        from .vad.vad_factory import VADFactory
 
         logger.info("Creating VAD and ASR pipelines")
         print("[DEBUG] Creating VAD and ASR pipelines")
