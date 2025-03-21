@@ -1,0 +1,45 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: whisper-streaming-v2
+  namespace: default
+  annotations:
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-1:975226449092:certificate/07f2dd38-dc71-4831-936d-64bf9abefb8d
+    alb.ingress.kubernetes.io/group.name: whisper
+    alb.ingress.kubernetes.io/load-balancer-name: voice-whisper-alb-v2
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}, {"HTTP":80}]'
+    alb.ingress.kubernetes.io/backend-protocol: HTTP
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/ssl-redirect: "443"
+    alb.ingress.kubernetes.io/connection-idle-timeout: "3600"
+    alb.ingress.kubernetes.io/load-balancer-attributes: "routing.http2.enabled=true"
+    alb.ingress.kubernetes.io/success-codes: "200-499"
+    alb.ingress.kubernetes.io/target-type: ip
+    external-dns.alpha.kubernetes.io/hostname: whisper.voice.staging.owl.works,whisper-serve.voice.staging.owl.works
+
+spec:
+  ingressClassName: alb
+  rules:
+    # Rule for frontend host routing to port 8265
+    - host: whisper.voice.staging.owl.works
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: whisper-streaming-head-svc
+                port:
+                  number: 8265
+
+    # Rule for backend host routing to port 8000
+    - host: whisper-serve.voice.staging.owl.works
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: whisper-streaming-serve-svc
+                port:
+                  number: 8000
