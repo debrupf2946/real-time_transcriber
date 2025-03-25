@@ -23,4 +23,8 @@ async def save_audio_to_file(audio_data, file_name, audio_dir="audio_files", aud
         wav_file.setframerate(16000)
         wav_file.writeframes(audio_data)
 
+    if not os.path.isfile(file_path):
+        raise FileNotFoundError(f"Failed to create audio file at {file_path}")
+
+
     return file_path
