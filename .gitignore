@@ -1,0 +1,11 @@
+# Ignore all __pycache__ directories
+**/__pycache__/
+
+# Optionally ignore compiled Python files directly
+*.pyc
+*.pyo
+*.pyd
+venv/
+.venv/
+audio_files/
+debugging/
