@@ -389,7 +389,7 @@ class SilenceAtEndOfChunk(BufferingStrategyInterface):
         try:
             start = time.time()
             logger.info("Starting asynchronous audio processing")
-            transcription = await asr_handle.transcribe_byte_stream.remote(client=self.client)
+            transcription = await asr_handle.transcribe_raw.remote(client=self.client)
             self.client.increment_file_counter()
             
             

@@ -11,7 +11,7 @@ import logging
 from audio_utils import save_audio_to_file
 from client import Client
 from asr.faster_whisper_asr import FasterWhisperASR
-from vad.pyannote_vad import PyannoteVAD
+from vad.pyannote_vad import SileroVAD
 
 logger = logging.getLogger("ray.serve")
 logger.setLevel(logging.DEBUG)
@@ -107,7 +107,7 @@ class TranscriptionServer:
 
 logger.info("Starting TranscriptionServer deployment")
 print("[DEBUG] Starting TranscriptionServer deployment")
-entrypoint = TranscriptionServer.bind(FasterWhisperASR.bind(), PyannoteVAD.bind())
+entrypoint = TranscriptionServer.bind(FasterWhisperASR.bind(), SileroVAD.bind())
 serve.run(entrypoint)
 logger.info("TranscriptionServer is running")
 print("[DEBUG] TranscriptionServer is running")

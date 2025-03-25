@@ -9,7 +9,7 @@ import shutil
 import time
 
 from .asr_interface import ASRInterface
-from audio_utils import save_audio_to_file
+from audio_utils import save_audio_to_file,convert_audio
 
 logger = logging.getLogger("ray.serve")
 logger.setLevel(logging.DEBUG)
@@ -273,7 +273,8 @@ class FasterWhisperASR(ASRInterface):
             logger.info(f"Buffer type: {type(client.scratch_buffer)}")
 
             # Create BytesIO stream
-            audio_stream = io.BytesIO(client.scratch_buffer)
+            audio_data=await convert_audio(client.scratch_buffer)
+            audio_stream = io.BytesIO(audio_data)
 
             # Additional audio format debugging
             try:
@@ -317,7 +318,7 @@ class FasterWhisperASR(ASRInterface):
                     audio_stream.seek(0)
                 else:
                     logger.info("Audio already in correct format, using original")
-                    audio_stream = io.BytesIO(client.scratch_buffer)
+                  # audio_stream = io.BytesIO(client.scratch_buffer)
 
                 # Log final audio characteristics
                 if audio_modified:
@@ -339,6 +340,9 @@ class FasterWhisperASR(ASRInterface):
             # Language detection
             language = None if client.config['language'] is None else language_codes.get(
                 client.config['language'].lower())
+            
+            audio_stream = io.BytesIO(audio_data)
+
 
             # Transcription
             logger.info("Starting transcription with Whisper model")
@@ -385,6 +389,93 @@ class FasterWhisperASR(ASRInterface):
 
         except Exception as e:
             logger.error(f"Transcription error: {e}")
+            return {
+                "error": str(e),
+                "buffer_details": {
+                    "size": len(client.scratch_buffer),
+                    "type": str(type(client.scratch_buffer))
+                }
+            }
+
+    async def transcribe_raw(self, client):
+        """
+        Transcribe raw audio bytes directly without saving to a WAV file.
+        Expects 16-bit PCM audio data at 16kHz sample rate.
+        """
+        try:
+            # Log input buffer details
+            logger.info(f"Received audio buffer - Size: {len(client.scratch_buffer)} bytes")
+            logger.info(f"Buffer type: {type(client.scratch_buffer)}")
+            
+            # Convert raw PCM bytes to numpy array
+            import numpy as np
+            audio_data = np.frombuffer(client.scratch_buffer, dtype=np.int16)
+            logger.info(f"Converted to numpy array with shape: {audio_data.shape}")
+            
+            # Normalize to float32 in range [-1, 1]
+            audio_data = audio_data.astype(np.float32) / 32768.0
+            logger.info(f"Normalized audio data to float32")
+            
+            # Language detection
+            language = None if client.config['language'] is None else language_codes.get(
+                client.config['language'].lower())
+            logger.info(f"Using language: {language if language else 'auto-detect'}")
+            
+            # Transcription
+            logger.info("Starting transcription with Whisper model")
+            start_time = time.time()
+            
+            segments, info = self.asr_pipeline.transcribe(
+                audio_data, 
+                word_timestamps=True, 
+                language="en", 
+                beam_size=5,
+                vad_filter=True,
+            )
+            
+            transcription_time = time.time() - start_time
+            logger.info(f"Completed transcription in {transcription_time:.2f} seconds")
+            logger.info(f"Detected language: {info.language} (probability: {info.language_probability:.2f})")
+
+            segments = list(segments)  # Ensure segments is a list
+            logger.info(f"Generated {len(segments)} segments")
+            
+            # Flatten words
+            flattened_words = [
+                word for segment in segments for word in segment.words
+            ]
+            logger.info(f"Extracted {len(flattened_words)} words")
+
+            # Prepare return dictionary
+            to_return = {
+                "language": info.language,
+                "language_probability": info.language_probability,
+                "text": ' '.join([s.text.strip() for s in segments]),
+                "words": [
+                    {
+                        "word": w.word, 
+                        "start": w.start, 
+                        "end": w.end, 
+                        "probability": w.probability
+                    } for w in flattened_words
+                ],
+                "debug_info": {
+                    "original_buffer_size": len(client.scratch_buffer),
+                    "audio_shape": audio_data.shape,
+                    "audio_dtype": str(audio_data.dtype),
+                    "audio_duration": f"{len(audio_data) / 16000:.2f} seconds"  # Assuming 16kHz sample rate
+                }
+            }
+
+            logger.info(f"Successfully processed transcription with {len(flattened_words)} words")
+            logger.info(f"Transcribed text: {to_return['text'][:100]}...")  # Log first 100 chars of text
+            return to_return
+
+        except Exception as e:
+            logger.error(f"Transcription error: {str(e)}")
+            logger.error(f"Error type: {type(e).__name__}")
+            import traceback
+            logger.error(f"Traceback: {traceback.format_exc()}")
             return {
                 "error": str(e),
                 "buffer_details": {
