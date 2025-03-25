@@ -9,12 +9,12 @@ import io
 SERVER_URL = "ws://localhost:8000/"  # Change if needed
 
 # Audio Configuration
-CHUNK_DURATION = 3  # 3 seconds per chunk
+CHUNK_DURATION = 5  # 3 seconds per chunk
 SAMPLE_RATE = 16000  # Required sample rate
 FORMAT = pyaudio.paInt16  # 16-bit PCM
 CHANNELS = 1  # Mono
 CHUNK_SIZE = int(SAMPLE_RATE * CHUNK_DURATION)  # Frames per chunk
-SILENCE_PADDING = 0.5  # 0.5s silence to signal chunk completion
+SILENCE_PADDING = 0.0001  # 0.5s silence to signal chunk completion
 
 def convert_audio(audio_data):
     """
@@ -75,4 +75,4 @@ async def record_and_stream():
             audio.terminate()
 
 # Run the recording and streaming function
-asyncio.run(record_and_stream())
+# asyncio.run(record_and_stream())
