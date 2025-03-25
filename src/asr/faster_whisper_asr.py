@@ -1,8 +1,10 @@
+from curses import delay_output
 import os
 from faster_whisper import WhisperModel, BatchedInferencePipeline
 
 from .asr_interface import ASRInterface
 from audio_utils import save_audio_to_file
+from datetime_utils import get_current_time_string_with_milliseconds
 
 
 from ray import serve
@@ -154,13 +156,18 @@ class FasterWhisperASR(ASRInterface):
 
         
 
-    async def transcribe(self, client):
+    async def transcribe(self, client, debug_output):
         file_path = await save_audio_to_file(client.scratch_buffer, client.get_file_name())
 
         language = None if client.config['language'] is None else language_codes.get(
             client.config['language'].lower())
+    
+        current_index = len(debug_output["transcriptions_timestamp"])
+        debug_output["transcriptions_timestamp"].append({"transcription_index": current_index, "start_time": get_current_time_string_with_milliseconds(), "end_time": None, "duration": None})
         segments, info = self.asr_pipeline.transcribe(
             file_path, word_timestamps=True, language="en",beam_size=2)
+        
+        debug_output["transcriptions_timestamp"][current_index]["end_time"] = get_current_time_string_with_milliseconds()
 
         segments = list(segments)  # The transcription will actually run here.
         
@@ -177,6 +184,7 @@ class FasterWhisperASR(ASRInterface):
             "words":
             [
                 {"word": w.word, "start": w.start, "end": w.end, "probability": w.probability} for w in flattened_words
-            ]
+            ],
+            "debug_output": debug_output
         }
         return to_return
