@@ -10,7 +10,7 @@ import librosa
 import time  # Import time module for measurement
 
 SERVER_URL = "ws://localhost:8000/"
-AUDIO_FILE = "debug/debug_audio.wav"  
+AUDIO_FILE = "test_audio.wav"  
 DEBUG_DIR = "debug2"
 DEBUG_AUDIO_FILE = os.path.join(DEBUG_DIR, "debug_audio.wav")  # Save in debug directory
 TIMEOUT_SECONDS = 20  # Timeout duration for WebSocket response
