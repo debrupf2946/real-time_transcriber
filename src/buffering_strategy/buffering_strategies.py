@@ -356,9 +356,11 @@ class SilenceAtEndOfChunk(BufferingStrategyInterface):
 
         original_scratch_buffer = self.client.scratch_buffer
         self.client.scratch_buffer = bytearray(self.client.buffer)
-
+        buffer_start_time=time.time()
         vad_results = await vad_handle.detect_activity.remote(client=self.client)
+        buffer_end_time=time.time()
         logger.debug(f"VAD results: {vad_results}")
+        logger.info(f"VAD processing time{buffer_start_time-buffer_end_time}")
 
         if not vad_results:
             logger.info("No speech detected, restoring buffer")
@@ -374,6 +376,7 @@ class SilenceAtEndOfChunk(BufferingStrategyInterface):
                 logger.info(f"Silence detected, processing {buffer_duration:.2f}s of audio")
                 self.processing_flag = True
                 self.client.buffer.clear()
+                logger.info("starting process audio")
                 await self.process_audio_async(websocket, vad_handle, asr_handle)
             else:
                 logger.info("Not enough speech detected, restoring buffer")
@@ -386,11 +389,17 @@ class SilenceAtEndOfChunk(BufferingStrategyInterface):
         try:
             start = time.time()
             logger.info("Starting asynchronous audio processing")
-            transcription = await asr_handle.transcribe.remote(client=self.client)
+            transcription = await asr_handle.transcribe_raw.remote(client=self.client)
             self.client.increment_file_counter()
+            
+            
+            if transcription.get('error'):
+                logger.error(f"Transcription failed: {transcription['error']}")
+                return
 
             if transcription['text'].strip():
                 end = time.time()
+                logger.info(f"Transcription Processing time :{start-end}")
                 transcription['processing_time'] = end - start
                 json_transcription = json.dumps(transcription)
                 await websocket.send_text(json_transcription)
@@ -403,3 +412,4 @@ class SilenceAtEndOfChunk(BufferingStrategyInterface):
         finally:
             logger.info("Finished async processing, resetting flag")
             self.processing_flag = False
+
