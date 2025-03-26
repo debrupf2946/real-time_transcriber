@@ -25,7 +25,7 @@ class Client:
         self.config = {"language": None,
                        "processing_strategy": "silence_at_end_of_chunk", 
                        "processing_args": {
-                           "chunk_length_seconds": 3, 
+                           "chunk_length_seconds": 0.01, 
                            "chunk_offset_seconds": 0.1
                            }
                        }

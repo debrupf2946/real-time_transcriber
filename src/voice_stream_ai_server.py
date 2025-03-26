@@ -1,13 +1,14 @@
 from ray.serve.handle import DeploymentHandle
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from ray import serve
+import ray
 
 import uuid
 import logging
 
 from client import Client
 from asr.faster_whisper_asr import FasterWhisperASR
-from vad.pyannote_vad import PyannoteVAD
+from vad.silero_vad import SileroVAD
 
 logger = logging.getLogger("ray.serve")
 logger.setLevel(logging.DEBUG)
@@ -55,8 +56,8 @@ class TranscriptionServer:
 
         while True:
             message = await websocket.receive()
-            audio_chunk_timestamp_length = len(self.debug_output["audio_chunks_timestamp"])
-            self.debug_output["audio_chunks_timestamp"].append({"chunk_index": audio_chunk_timestamp_length, "timestamp": get_current_time_string_with_milliseconds()})
+            #audio_chunk_timestamp_length = len(self.debug_output["audio_chunks_timestamp"])
+            #self.debug_output["audio_chunks_timestamp"].append({"chunk_index": audio_chunk_timestamp_length, "timestamp": get_current_time_string_with_milliseconds()})
 
             # print(
             #     f"[DEBUG] Received message from client {client.client_id}: {message}")
@@ -124,10 +125,10 @@ class TranscriptionServer:
             del self.connected_clients[client_id]
 
 
+
 logger.info("Starting TranscriptionServer deployment")
 print("[DEBUG] Starting TranscriptionServer deployment")
-entrypoint = TranscriptionServer.bind(
-    FasterWhisperASR.bind(), PyannoteVAD.bind())
+entrypoint = TranscriptionServer.bind(FasterWhisperASR.bind(), SileroVAD.bind())
 serve.run(entrypoint)
 logger.info("TranscriptionServer is running")
 print("[DEBUG] TranscriptionServer is running")
