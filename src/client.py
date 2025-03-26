@@ -55,5 +55,5 @@ class Client:
 
         return f"{self.client_id}_{self.file_counter}.wav"
     
-    def process_audio(self, websocket : WebSocket, vad_handle, asr_handle):
-        self.buffering_strategy.process_audio(websocket, vad_handle, asr_handle)
+    def process_audio(self, websocket : WebSocket, vad_handle, asr_handle, debug_output):
+        self.buffering_strategy.process_audio(websocket, vad_handle, asr_handle, debug_output)

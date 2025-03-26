@@ -1,4 +1,4 @@
-from .pyannote_vad import SileroVAD
+from .silero_vad import SileroVAD
 
 class VADFactory:
     """

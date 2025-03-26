@@ -1,3 +1,4 @@
+from curses import delay_output
 import os
 import io
 import logging
@@ -9,10 +10,13 @@ import shutil
 import time
 
 from .asr_interface import ASRInterface
+from datetime_utils import get_current_time_string_with_milliseconds
 from audio_utils import save_audio_to_file,convert_audio
+import soundfile as sf
+import librosa
 
 logger = logging.getLogger("ray.serve")
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 
 
 from ray import serve
@@ -121,6 +125,9 @@ language_codes = {
     "cantonese": "yue",
 }
 
+import shutil
+import time
+
 @serve.deployment(
     ray_actor_options={"num_gpus": 1},
     autoscaling_config={"min_replicas": 1, "max_replicas": 2},
@@ -209,13 +216,26 @@ class FasterWhisperASR(ASRInterface):
 
 
 
-    async def transcribe(self, client):
+    async def transcribe(self, client, debug_output):
         file_path = await save_audio_to_file(client.scratch_buffer, client.get_file_name())
 
         language = None if client.config['language'] is None else language_codes.get(
             client.config['language'].lower())
+
+         # Save a copy for debugging
+        current_milli_time = int(round(time.time() * 1000))
+        debug_dir = "debugging"
+        os.makedirs(debug_dir, exist_ok=True)
+        base_name, ext = os.path.splitext(os.path.basename(file_path))
+        debug_file_path = os.path.join(debug_dir, f"{base_name}_{current_milli_time}{ext}")
+        shutil.copy2(file_path, debug_file_path)
+    
+        current_index = len(debug_output["transcriptions_timestamp"])
+        debug_output["transcriptions_timestamp"].append({"transcription_index": current_index, "start_time": get_current_time_string_with_milliseconds(), "end_time": None, "duration": None})
         segments, info = self.asr_pipeline.transcribe(
-            file_path, word_timestamps=True, language="en",beam_size=5)
+            file_path, word_timestamps=True, language="en",beam_size=2)
+        
+        debug_output["transcriptions_timestamp"][current_index]["end_time"] = get_current_time_string_with_milliseconds()
 
         segments = list(segments)  # The transcription will actually run here.
         
@@ -232,7 +252,8 @@ class FasterWhisperASR(ASRInterface):
             "words":
             [
                 {"word": w.word, "start": w.start, "end": w.end, "probability": w.probability} for w in flattened_words
-            ]
+            ],
+            "debug_output": debug_output
         }
         return to_return
     
@@ -266,7 +287,7 @@ class FasterWhisperASR(ASRInterface):
     
 
 
-    async def transcribe_byte_stream(self, client):
+    async def transcribe_byte_stream(self, client, debug_output):
         try:
             # Detailed buffer logging
             logger.info(f"Total buffer size: {len(client.scratch_buffer)} bytes")
@@ -278,8 +299,6 @@ class FasterWhisperASR(ASRInterface):
 
             # Additional audio format debugging
             try:
-                import soundfile as sf
-                import librosa
                 
                 # Read audio data
                 audio_data, samplerate = sf.read(audio_stream)
@@ -397,7 +416,7 @@ class FasterWhisperASR(ASRInterface):
                 }
             }
 
-    async def transcribe_raw(self, client):
+    async def transcribe_raw(self, client, debug_output):
         """
         Transcribe raw audio bytes directly without saving to a WAV file.
         Expects 16-bit PCM audio data at 16kHz sample rate.
@@ -408,7 +427,6 @@ class FasterWhisperASR(ASRInterface):
             logger.info(f"Buffer type: {type(client.scratch_buffer)}")
             
             # Convert raw PCM bytes to numpy array
-            import numpy as np
             audio_data = np.frombuffer(client.scratch_buffer, dtype=np.int16)
             logger.info(f"Converted to numpy array with shape: {audio_data.shape}")
             
@@ -425,6 +443,8 @@ class FasterWhisperASR(ASRInterface):
             logger.info("Starting transcription with Whisper model")
             start_time = time.time()
             
+            current_index = len(debug_output["transcriptions_timestamp"])
+            debug_output["transcriptions_timestamp"].append({"transcription_index": current_index, "start_time": get_current_time_string_with_milliseconds(), "end_time": None, "duration": None})
             segments, info = self.asr_pipeline.transcribe(
                 audio_data, 
                 word_timestamps=True, 
@@ -432,6 +452,7 @@ class FasterWhisperASR(ASRInterface):
                 beam_size=5,
                 vad_filter=True,
             )
+            debug_output["transcriptions_timestamp"][current_index]["end_time"] = get_current_time_string_with_milliseconds()
             
             transcription_time = time.time() - start_time
             logger.info(f"Completed transcription in {transcription_time:.2f} seconds")
@@ -464,7 +485,8 @@ class FasterWhisperASR(ASRInterface):
                     "audio_shape": audio_data.shape,
                     "audio_dtype": str(audio_data.dtype),
                     "audio_duration": f"{len(audio_data) / 16000:.2f} seconds"  # Assuming 16kHz sample rate
-                }
+                },
+                "debug_output": debug_output
             }
 
             logger.info(f"Successfully processed transcription with {len(flattened_words)} words")

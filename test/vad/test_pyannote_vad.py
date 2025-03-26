@@ -5,7 +5,7 @@ import os
 import json
 import asyncio
 from pydub import AudioSegment
-from src.vad.pyannote_vad import PyannoteVAD
+from src.vad.silero_vad import SileroVAD
 from src.client import Client
 
 class TestPyannoteVAD(unittest.TestCase):

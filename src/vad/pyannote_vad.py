@@ -1,3 +1,4 @@
+from curses import delay_output
 from os import remove
 import os
 import io
@@ -19,6 +20,7 @@ logger.setLevel(logging.DEBUG)
 
 from ray import serve
 from ray.serve.handle import DeploymentHandle
+from datetime_utils import get_current_time_string_with_milliseconds
 
 # @serve.deployment(
 #     ray_actor_options={"num_cpus": 1},
