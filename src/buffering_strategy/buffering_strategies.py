@@ -75,8 +75,6 @@ class SilenceAtEndOfChunk(BufferingStrategyInterface):
         # Safely get the original scratch buffer, or default to an empty bytearray
         original_scratch_buffer = getattr(self.client, 'scratch_buffer', bytearray())
         try:
-
-            logger.info(f"Buffer length: {len(self.client.buffer)}")
             bytes_per_second = self.client.sampling_rate * self.client.samples_width
             bytes_in_buffer_context_seconds = int(bytes_per_second * self.buffer_context_seconds_for_vad)
             if (len(self.client.buffer) > bytes_in_buffer_context_seconds):

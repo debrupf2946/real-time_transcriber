@@ -1,11 +1,8 @@
-from .whisper_asr import WhisperASR
 from .faster_whisper_asr import FasterWhisperASR
 
 class ASRFactory:
     @staticmethod
     def create_asr_pipeline(type, **kwargs):
-        if type == "whisper":
-            return WhisperASR(**kwargs)
         if type == "faster_whisper":
             return FasterWhisperASR.bind(**kwargs)
         else:
